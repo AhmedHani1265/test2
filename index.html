@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="utf-8" />
+    <title>عرض بيانات 3D من PostgreSQL</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body,
+      #cesiumContainer {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <script>
+      // ضع هنا توكن Cesium Ion الخاص بك
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhOGFhZmIwZC02NjAwLTQ5ZDEtYWIyZS0yOTBhZjkzZGFmNWIiLCJpZCI6MzE5MjU4LCJpYXQiOjE3NTE4OTM2Mjd9.EwZeHuqs3AXk55CbSLhZfRAfrsbZd4ehoocyLmvcRqc";
+
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        terrain: Cesium.Terrain.fromWorldTerrain(),
+      });
+
+      // تحميل البيانات من السيرفر
+      Cesium.GeoJsonDataSource.load("buildings.geojson", {
+        clampToGround: false,
+      }).then(function (dataSource) {
+        viewer.dataSources.add(dataSource);
+        viewer.flyTo(dataSource);
+
+        const entities = dataSource.entities.values;
+        for (let i = 0; i < entities.length; i++) {
+          const entity = entities[i];
+          if (Cesium.defined(entity.polygon)) {
+            entity.polygon.height = 50; // يبدأ من سطح الأرض
+            entity.polygon.extrudedHeight = 300; // ارتفاع المبنى بالمتر
+            entity.polygon.perPositionHeight = false; // مهم جداً
+            entity.polygon.material = Cesium.Color.BLUE.withAlpha(0.6);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
